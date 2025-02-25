@@ -21,6 +21,9 @@ console.log("enter into backend")
 
 app.use("/",loginRouter)
 app.use("/",loginRouter)
+app.get("/",()=>{
+  res.send("welcome TO the Page")
+})
 
 
 app.listen(3000,()=>{
