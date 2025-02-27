@@ -2,10 +2,11 @@ const login = require('../models/loginModel');
 const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
 const otpGenerator = require('otp-generator');
+const { createClient } = require('redis');
 
 
-const OtpExpire = 2 * 60 * 1000
-let otpStore ={}
+const OtpExpire = 60 * 1000
+
 
 const transporter = nodemailer.createTransport({
     service:"gmail",
@@ -14,6 +15,12 @@ const transporter = nodemailer.createTransport({
         pass: "fznt ittn egav kajd",  
     }
 })
+
+const client = createClient({ url: 'redis://localhost:6379' });
+client.on('error', (err) => console.error('Redis Error:', err));
+client.connect()
+    .then(() => console.log('Connected to Redis'))
+    .catch(err => console.error('Redis Connection Error:', err));
 
 const generateOtp = ()=>{
     const otp = Math.round(10000+Math.random()*900000)
@@ -25,7 +32,7 @@ const postLogin = async (req, res) => {
   const { email, password } = req.body;
   console.log(email, password);
 
-  
+  console.log("enter into backend")
 
 
   if(!email){
@@ -37,9 +44,10 @@ const postLogin = async (req, res) => {
   if(!user){
     const expireDate = Date.now()+OtpExpire
   const otp = generateOtp()
-
-  otpStore[email]={otp,expireDate}
-  console.log(otpStore)
+  
+  const data = JSON.stringify({otp,expireDate})
+  await client.setEx(email,300,data)
+  console.log(client.get(email))
 
   const mailOptions={
     from:"tarunbommana798@gmail.com",
@@ -183,30 +191,29 @@ const postLogin = async (req, res) => {
   
 };
 
-
 const verifyOtp =async(req,res)=>{
     const {email,userOtp,password} = req.body
     if(!email){
         return res.status(404).json({message:"Enter some Email"})
     }
-
-    console.log(otpStore)
-
-    const record = otpStore[email];
-
-    if (!record) {
-      return res.status(400).json({ message: "No OTP found for this email" });
-    }
+    console.log(email,userOtp)
     
-    const {otp,expireDate}=record
+    const data = await client.get(email)
+   
+    const {otp,expireDate}=JSON.parse(data)
+    console.log(otp,expireDate)
+
+    
     if(Date.now()>expireDate){
-        delete otpStore[email]
+        await client.del(email)
+        console.log("time is over")
         return res.status(201).json({message:'Time is Over Otp Delete Successfully'})
     }
-    if (userOtp!==otp){
+    if (parseInt(userOtp)!==(otp)){
+      console.log("invalid otp ")
         return res.status(400).json({message:"Invalid OTP"})
     }
-    delete otpStore[email]
+    await client.del(email)
    
     const hashedPassword = await bcrypt.hash(password,10)
     
@@ -214,6 +221,7 @@ const verifyOtp =async(req,res)=>{
         email,
         password:hashedPassword
     })
+    console.log("inserted Successfully")
     res.status(200).json({ message: 'Inserted Sucessfully' });
     
 

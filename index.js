@@ -1,12 +1,14 @@
 const express = require('express')
 const app = express()
 const dotenv = require('dotenv')
+const cors = require('cors')
 dotenv.config()
 const mongoose = require('mongoose')
 const loginRouter = require('./routers/loginRouter')
 
 
 app.use(express.json());
+app.use(cors())
 
 
 mongoose.connect(process.env.MONGODB_URI, {
@@ -16,15 +18,10 @@ mongoose.connect(process.env.MONGODB_URI, {
   .then(() => console.log('MongoDB connected'))
   .catch((err) => console.error('MongoDB connection error:', err));
 
-console.log("enter into backend")
 
 
 app.use("/",loginRouter)
 app.use("/",loginRouter)
-app.get("/",()=>{
-  res.send("welcome TO the Page")
-})
-
 
 app.listen(3000,()=>{
     console.log("port Running At Port 3000")
