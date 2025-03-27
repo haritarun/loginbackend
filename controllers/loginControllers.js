@@ -1,9 +1,8 @@
 const login = require('../models/loginModel');
 const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
-const otpGenerator = require('otp-generator');
-const { createClient } = require('redis');
 
+const { createClient } = require('redis');
 
 const OtpExpire = 60 * 1000
 
@@ -30,11 +29,7 @@ const generateOtp = ()=>{
 
 const postLogin = async (req, res) => {
   const { email, password } = req.body;
-  console.log(email, password);
-
-  console.log("enter into backend")
-
-
+  
   if(!email){
     res.status(404).json({message:"Enter some Email"})
   }
@@ -43,11 +38,11 @@ const postLogin = async (req, res) => {
 
   if(!user){
     const expireDate = Date.now()+OtpExpire
-  const otp = generateOtp()
+    const otp = generateOtp()
   
   const data = JSON.stringify({otp,expireDate})
   await client.setEx(email,300,data)
-  console.log(client.get(email))
+  
 
   const mailOptions={
     from:"tarunbommana798@gmail.com",
