@@ -6,6 +6,7 @@ dotenv.config()
 const mongoose = require('mongoose')
 const loginRouter = require('./routers/loginRouter')
 const LocationRouter = require('./routers/LocationRouter')
+const CartRouter = require('./routers/CartRouter')
 
 app.use(express.json());
 app.use(cors())
@@ -19,10 +20,11 @@ mongoose.connect(process.env.MONGODB_URI, {
 
 
 app.use("/",loginRouter)
-app.use("/",loginRouter)
+
 app.use("/",LocationRouter)
-app.use("/",LocationRouter)
- 
+
+app.use('/',CartRouter)
+
 
 app.listen(3000,()=>{
     console.log("port Running At Port 3000")
