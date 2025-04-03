@@ -85,13 +85,11 @@ mongoose.connect(process.env.MONGODB_URI, {
   });
 
 
-  app.post('/chat', async (req, res) => {
-    console.log(req.body.prompt)
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: req.body.prompt }],
+  app.post('/ollama', (req, res) => {
+    exec(`ollama run mistral "${req.body.prompt}"`, (error, stdout) => {
+      if (error) return res.status(500).json({ error: error.message });
+      res.json({ response: stdout });
     });
-    res.json({ response: completion.choices[0].message.content });
   });
   
 
