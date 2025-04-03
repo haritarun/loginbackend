@@ -14,7 +14,7 @@ const CartRouter = require('./routers/CartRouter')
 const ProfilleRouter = require('./routers/ProfileRouter')
 
 const OrderRouter = require('./routers/OrderRouter')
-const { exec } = require('child_process');
+
 
 app.use(express.json());
 app.use(cors())
@@ -33,9 +33,23 @@ mongoose.connect(process.env.MONGODB_URI, {
     key_id: 'rzp_test_c6OOqIRzJ4dxn4',
     key_secret: 'RwpxzvOaEawLlGy3DOFhQj2D'
   });
+  
 
-  const OpenAI = require('openai');
-  const openai = new OpenAI(process.env.OPENAI_API_KEY); 
+
+
+  app.get('/getChat',async(req,res)=>{
+    const completion = openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      store: true,
+      messages: [
+        {"role": "user", "content": "write a haiku about ai"},
+      ],
+    });
+
+    completion.then((result) => console.log(result.choices[0].message));
+
+    
+  })
 
   app.post('/create-order', async (req, res) => {
     try {
@@ -85,12 +99,7 @@ mongoose.connect(process.env.MONGODB_URI, {
   });
 
 
-  app.post('/ollama', (req, res) => {
-    exec(`ollama run mistral "${req.body.prompt}"`, (error, stdout) => {
-      if (error) return res.status(500).json({ error: error.message });
-      res.json({ response: stdout });
-    });
-  });
+  
   
 
   app.use("/",loginRouter)
