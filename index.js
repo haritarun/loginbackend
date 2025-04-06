@@ -14,6 +14,7 @@ const CartRouter = require('./routers/CartRouter')
 const ProfilleRouter = require('./routers/ProfileRouter')
 
 const OrderRouter = require('./routers/OrderRouter')
+const ChatRouter = require('./routers/ChatRouter')
 
 
 app.use(express.json());
@@ -34,22 +35,6 @@ mongoose.connect(process.env.MONGODB_URI, {
     key_secret: 'RwpxzvOaEawLlGy3DOFhQj2D'
   });
   
-
-
-
-  app.get('/getChat',async(req,res)=>{
-    const completion = openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      store: true,
-      messages: [
-        {"role": "user", "content": "write a haiku about ai"},
-      ],
-    });
-
-    completion.then((result) => console.log(result.choices[0].message));
-
-    
-  })
 
   app.post('/create-order', async (req, res) => {
     try {
@@ -99,9 +84,6 @@ mongoose.connect(process.env.MONGODB_URI, {
   });
 
 
-  
-  
-
   app.use("/",loginRouter)
 
   app.use("/",LocationRouter)
@@ -110,6 +92,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 
   app.use('/',ProfilleRouter)
   app.use('/',OrderRouter)
+  app.use('/',ChatRouter)
 
 
   app.listen(3000,()=>{
